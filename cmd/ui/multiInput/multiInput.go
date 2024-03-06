@@ -9,8 +9,8 @@ import (
 
 var (
 	// Styles
-	focusedStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#01FAC6")).Background(lipgloss.Color("#030303")).Bold(true)
-	titleStyle   = lipgloss.NewStyle().Background(lipgloss.Color("#01FAC6")).Foreground(lipgloss.Color("#030303")).Bold(true)
+	focusedStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#077bff")).Background(lipgloss.Color("#030303")).Bold(true)
+	titleStyle   = lipgloss.NewStyle().Background(lipgloss.Color("#077bff")).Foreground(lipgloss.Color("#030303")).Bold(true)
 )
 
 type Selection struct {
@@ -46,6 +46,7 @@ func InitalModelMulti(choices []string, selection *Selection, header string) mod
 }
 
 // realtime callback
+// realtime callback
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -58,20 +59,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.cursor < len(m.choices)-1 {
 				m.cursor++
 			}
-		case "enter", " ":
-			if len(m.selected) == 1 {
-				m.selected = make(map[int]struct{})
+		case "enter", " ": // Confirm selection immediately.
+			// Update the choice with the current selection.
+			if m.choice != nil { // Check that m.choice is not nil
+				m.choice.Update(m.choices[m.cursor])
 			}
-			_, ok := m.selected[m.cursor]
-			if ok {
-				delete(m.selected, m.cursor)
-			} else {
-				m.selected[m.cursor] = struct{}{}
-			}
-		case "y":
-			if len(m.selected) == 1 {
-				return m, tea.Quit
-			}
+			return m, tea.Quit
 		}
 		switch msg.Type {
 		case tea.KeyCtrlC, tea.KeyEsc:
@@ -83,6 +76,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 // renders logic from textinput component to the screen
+// renders logic from textinput component to the screen
 func (m model) View() string {
 	s := m.header + "\n\n"
 
@@ -91,13 +85,9 @@ func (m model) View() string {
 		if m.cursor == i {
 			cursor = focusedStyle.Render(">")
 		}
-		checked := " "
-		if _, ok := m.selected[i]; ok {
-			checked = focusedStyle.Render("x")
-		}
-		s += fmt.Sprintf("%s [%s] %s\n", cursor, checked, choice)
+		// No need for 'checked' since selection is immediate upon 'enter'
+		s += fmt.Sprintf("%s %s\n", cursor, choice)
 	}
-	s += fmt.Sprintf("\nPress %s to confirm your selection\n", focusedStyle.Render("y"))
+	s += "\nPress Enter to select your choice\n" // Updated instructions
 	return s
-
 }

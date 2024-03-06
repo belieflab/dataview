@@ -1,4 +1,4 @@
-module dataview
+module jspsych
 
 go 1.22.0
 

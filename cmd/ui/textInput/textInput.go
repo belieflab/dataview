@@ -10,7 +10,7 @@ import (
 
 var (
 	// Styles
-	titleStyle = lipgloss.NewStyle().Background(lipgloss.Color("#01FAC6")).Foreground(lipgloss.Color("#030303")).Bold(true).Padding(0, 1, 0)
+	titleStyle = lipgloss.NewStyle().Background(lipgloss.Color("#077bff")).Foreground(lipgloss.Color("#030303")).Bold(true).Padding(0, 1, 0)
 )
 
 type (
@@ -79,8 +79,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 // renders logic from textinput component to the screen
+// renders logic from textinput component to the screen
 func (m model) View() string {
-	return fmt.Sprintf("%s\n\n%s\n\n",
-		m.header,
-		m.textInput.View())
+	if m.output != nil && m.output.Output != "" { // Check if an output has been set
+		// If a selection has been made, display the header and the output without showing the input field
+		return fmt.Sprintf("%s\n\n%s\n\n", m.header, m.output.Output)
+	} else {
+		// If no selection has been made, display the input field as normal
+		return fmt.Sprintf("%s\n\n%s\n\n", m.header, m.textInput.View())
+	}
 }
