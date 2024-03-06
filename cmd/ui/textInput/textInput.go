@@ -3,15 +3,14 @@ package textInput
 import (
 	"fmt"
 
-	"dataview/cmd/ui/textInput"
+	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/charmbracelet/bubbles/textinput"
 )
 
 var (
 	// Styles
-	titleSstyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#01FAC6")).Foreground(lipgloss.Color(#030303)).Bold(true).Padding(0,1,0)
+	titleStyle = lipgloss.NewStyle().Background(lipgloss.Color("#01FAC6")).Foreground(lipgloss.Color("#030303")).Bold(true).Padding(0, 1, 0)
 )
 
 type (
@@ -28,9 +27,9 @@ func (o *Output) update(val string) {
 
 type model struct {
 	textInput textinput.Model
-	err error
-	output *Output
-	header string
+	err       error
+	output    *Output
+	header    string
 }
 
 // constructor
@@ -42,9 +41,9 @@ func InitalTextInputModel(output *Output, header string) model {
 
 	return model{
 		textInput: ti,
-		err: nil,
-		output: output,
-		header: titleStyle.Render(header),
+		err:       nil,
+		output:    output,
+		header:    titleStyle.Render(header),
 	}
 }
 
@@ -52,7 +51,6 @@ func InitalTextInputModel(output *Output, header string) model {
 func (m model) Init() tea.Cmd {
 	return textinput.Blink
 }
-
 
 // realtime callback
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -82,5 +80,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // renders logic from textinput component to the screen
 func (m model) View() string {
-	return fmt.Sprintf("%s\n\n%s", m.header, m.textInput.View())
+	return fmt.Sprintf("%s\n\n%s\n\n",
+		m.header,
+		m.textInput.View())
 }

@@ -2,16 +2,17 @@ package cmd
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
-	lipgloss "github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/lipgloss"
 	cobra "github.com/spf13/cobra"
 
-	"github.com/belieflab/dataview/cmd/ui/textInput"
+	"dataview/cmd/ui/multiInput"
+	"dataview/cmd/ui/textInput"
 )
 
 var (
-	logoStyle      = lipgloss.NewStyle().Foreground(lipgloss.Color("#FF00FF")).Bold(true)
-	tipMsgStyle    = lipgloss.NewStyle().PaddingLeft(1).Foreground(lipgloss.Color(190)).Italic(true)
-	endingMsgStyle = lipgloss.NewStyle().PaddingLeft(1).Foreground(lipgloss.Color(170)).Bold(true)
+	logoStyle      = lipgloss.NewStyle().Foreground(lipgloss.Color("#01FAC6")).Bold(true)
+	tipMsgStyle    = lipgloss.NewStyle().PaddingLeft(1).Foreground(lipgloss.Color("190")).Italic(true)
+	endingMsgStyle = lipgloss.NewStyle().PaddingLeft(1).Foreground(lipgloss.Color("170")).Bold(true)
 )
 
 // bind our command to the existing cobra command
@@ -24,10 +25,11 @@ type listOptions struct {
 }
 
 type Options struct {
-	ProjectName *textInput.Output // * is a pointer
-	ProjectType string
+	ProjectName *textInput.Output     // * is a pointer
+	ProjectType *multiInput.Selection // * is a pointer
 }
 
+// bare bones implementation of the cobra command
 var createCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create a new project",
@@ -39,6 +41,15 @@ var createCmd = &cobra.Command{
 		}
 
 		tprogram := tea.NewProgram(textInput.InitalTextInputModel(options.ProjectName, "Project Name:"))
+		if _, err := tprogram.Run(); err != nil {
+			cobra.CheckErr(err)
+		}
+
+		listOfOptions := listOptions{
+			options: []string{"Python", "Go", "Node", "Java", "C++", "C#"},
+		}
+
+		tprogram = tea.NewProgram(multiInput.InitalModelMulti(listOfOptions.options, options.ProjectType, "Project Type:"))
 		if _, err := tprogram.Run(); err != nil {
 			cobra.CheckErr(err)
 		}
