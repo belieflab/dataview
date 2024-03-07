@@ -205,16 +205,16 @@ var createCmd = &cobra.Command{
 				if err != nil {
 					fmt.Printf("WARNING: Failed to rename experiment. Directory already exists with the name %s.\n", options.ExperimentName.Output)
 				} else {
-					fmt.Printf("Experiment renamed successfully to %s.", options.ExperimentName.Output)
+					fmt.Printf("Experiment renamed successfully to %s.\n", options.ExperimentName.Output)
 				}
 				// Change working directory to the new project name
-				err = os.Chdir("../" + options.ExperimentName.Output)
-				if err != nil {
-					// Handle the error, maybe the directory doesn't exist or there are permissions issues
-					fmt.Printf("WARNING: Failed to change working directory to the new project: %v.\n", err)
-				} else {
-					fmt.Println("Current working directory changed to the new project.")
-				}
+				// err = os.Chdir("../" + options.ExperimentName.Output)
+				// if err != nil {
+				// 	// Handle the error, maybe the directory doesn't exist or there are permissions issues
+				// 	fmt.Printf("WARNING: Failed to change working directory to the new project: %v.\n", err)
+				// } else {
+				// 	fmt.Println("Current working directory changed to the new project.")
+				// }
 				err = os.Remove("./jspsych") // Modify as necessary
 				if err != nil {
 					// Handle the error, maybe the file didn't exist or there were permissions issues
@@ -222,13 +222,7 @@ var createCmd = &cobra.Command{
 				} else {
 					fmt.Println("jsPsych binary removed successfully.")
 				}
-				err = os.Remove("./init.sh") // Modify as necessary
-				if err != nil {
-					// Handle the error, maybe the file didn't exist or there were permissions issues
-					fmt.Printf("WARNING: Failed to remove jsPsych binary: %v.\n", err)
-				} else {
-					fmt.Println("jsPsych binary removed successfully.")
-				}
+
 				fmt.Println("Please edit exp/conf.js to configure your experiment.")
 
 				success = true // Exit the loop since the push was successful
