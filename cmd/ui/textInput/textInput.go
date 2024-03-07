@@ -79,7 +79,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 // renders logic from textinput component to the screen
-// renders logic from textinput component to the screen
 func (m model) View() string {
 	if m.output != nil && m.output.Output != "" { // Check if an output has been set
 		// If a selection has been made, display the header and the output without showing the input field

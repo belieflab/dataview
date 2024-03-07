@@ -15,12 +15,6 @@ import (
 	"jspsych/cmd/ui/textInput"
 )
 
-// var (
-// 	logoStyle      = lipgloss.NewStyle().Foreground(lipgloss.Color("#077bff")).Bold(true)
-// 	tipMsgStyle    = lipgloss.NewStyle().PaddingLeft(1).Foreground(lipgloss.Color("190")).Italic(true)
-// 	endingMsgStyle = lipgloss.NewStyle().PaddingLeft(1).Foreground(lipgloss.Color("170")).Bold(true)
-// )
-
 // bind our command to the existing cobra command
 func init() {
 	rootCmd.AddCommand(createCmd)
@@ -91,11 +85,6 @@ var createCmd = &cobra.Command{
 			}
 		}
 
-		// Check if the organization name is empty and set to default value "belieflab" if so
-		if options.GitHubAccount.Output == "" {
-			options.GitHubAccount.Output = "belieflab" // Set the default value manually
-		}
-
 		// Set up and run multiInput program to choose jsPsych version
 		listOfOptions := listOptions{
 			options: []string{"jsPsych 6.3", "jsPsych 7.x"},
@@ -108,82 +97,80 @@ var createCmd = &cobra.Command{
 		}
 
 		// Convert project type "jsPsych 6.3" or "jsPsych 7.x" to just "6.3" or "7.x"
-		jspsych := strings.Trim(options.jsPsychVersion.Choice, "jsPsych ")
-
+		re := regexp.MustCompile(`^\d+`) // This matches one or more digits at the beginning of the string
 		// Now, use regular expression to find just the numbers before the dot
-		re := regexp.MustCompile(`^\d+`)  // This matches one or more digits at the beginning of the string
-		version := re.FindString(jspsych) // Find the match
+		version := re.FindString(strings.Trim(options.jsPsychVersion.Choice, "jsPsych "))
 
 		// Initialize Git and clone template files
-		gitCommands := []string{
+		gitFork := []string{
 			"rm -rf .git",
 			"git init",
 		}
 
 		fileCommands := []string{
+			// Create data folder and initialize .gitkeep
+			"mkdir -p ./data",
+			"touch ./data/.gitkeep",
+			// Style
 			"mkdir -p ./css",
 			"echo \"/* add local styling here */\" >> ./css/exp.css",
-			"mkdir -p ./exp",
+			// Index
 			fmt.Sprintf("cp -rf ./wrap/tmp/v%s/index.php ./index.php", version),
+			// Experiment dependencies
+			"mkdir -p ./exp",
 			fmt.Sprintf("cp -rf ./wrap/tmp/v%s/timeline.js ./exp/timeline.js", version),
 			fmt.Sprintf("cp -rf ./wrap/tmp/v%s/main.js ./exp/main.js", version),
 			"cp -rf ./wrap/tmp/conf.js ./exp/conf.js",
 			"cp -rf ./wrap/tmp/lang.js ./exp/lang.js",
 			"cp -rf ./wrap/tmp/var.php ./exp/var.php",
 			"echo \"// add local functions here \" >> ./exp/fn.js",
-			// Add more file operations as needed
 		}
 
-		linkCommands := []string{
+		symbolicLinks := []string{
 			"ln -s ./wrap/link/data.php ./data.php",
-			"ln -s ./wrap/link/redirect.php./ r./edirect.php",
+			"ln -s ./wrap/link/redirect.php ./redirect.php",
 			"ln -s ./wrap/link/sync.sh ./sync.sh",
 		}
 
-		gitSetupCommands := []string{
-			"git add *",
+		gitAdd := []string{
+			"git add .gitignore",
+			"git add .gitmodules",
+			"git add data/.gitkeep",
+			"git add --all",
+		}
+
+		gitCommit := []string{
 			"git commit -m \"initialized experiment\"",
 			"git branch -M main",
-			fmt.Sprintf("git remote add origin git@github.com:%s/%s", options.GitHubAccount.Output, options.ExperimentName.Output),
+			fmt.Sprintf("git remote get-url origin || git remote add origin git@github.com:%s/%s", options.GitHubAccount.Output, options.ExperimentName.Output),
 		}
 
 		// Execute all commands
-
+		for _, cmd := range gitFork {
+			if err := exec.Command("bash", "-c", cmd).Run(); err != nil {
+				fmt.Printf("WARNING: Failed to execute git command '%s': %v\n", cmd, err)
+			}
+		}
 		for _, cmd := range fileCommands {
-			exec.Command("bash", "-c", cmd).Run()
+			if err := exec.Command("bash", "-c", cmd).Run(); err != nil {
+				fmt.Printf("WARNING: Failed to execute git command '%s': %v\n", cmd, err)
+			}
 		}
-		for _, cmd := range linkCommands {
-			exec.Command("bash", "-c", cmd).Run()
-		}
-
-		// Create data folder and initialize .gitkeep
-		exec.Command("mkdir", "-p", "./data").Run()
-		exec.Command("touch", "./data/.gitkeep").Run()
-
-		for _, cmd := range gitCommands {
-			exec.Command("bash", "-c", cmd).Run()
-		}
-
-		// Rename project directory
-		err := os.Rename("../createExperiment", "../"+options.ExperimentName.Output)
-		if err != nil {
-			fmt.Printf("WARNING: Failed to rename experiment. Directory already exists with the name %s.\n", options.ExperimentName.Output)
-		} else {
-			fmt.Println("Experiment renamed successfully to " + options.ExperimentName.Output)
-		}
-
-		// After all setup is done
-		// Assuming 'jsPsychBinary' is the path to the binary, replace it with the actual path if different
-		err = os.Remove("./jspsych") // Modify as necessary
-		if err != nil {
-			// Handle the error, maybe the file didn't exist or there were permissions issues
-			fmt.Printf("WARNING: Failed to remove jsPsych binary: %v.\n", err)
-		} else {
-			fmt.Println("jsPsych binary removed successfully.")
+		for _, cmd := range symbolicLinks {
+			if err := exec.Command("bash", "-c", cmd).Run(); err != nil {
+				fmt.Printf("WARNING: Failed to execute git command '%s': %v\n", cmd, err)
+			}
 		}
 
 		// Execute git setup commands
-		for _, cmd := range gitSetupCommands {
+		for _, cmd := range gitAdd {
+			if err := exec.Command("bash", "-c", cmd).Run(); err != nil {
+				fmt.Printf("WARNING: Failed to execute git command '%s': %v\n", cmd, err)
+				// You might want to handle the error more gracefully depending on your application's requirements
+			}
+		}
+
+		for _, cmd := range gitCommit {
 			if err := exec.Command("bash", "-c", cmd).Run(); err != nil {
 				fmt.Printf("WARNING: Failed to execute git command '%s': %v\n", cmd, err)
 				// You might want to handle the error more gracefully depending on your application's requirements
@@ -202,13 +189,27 @@ var createCmd = &cobra.Command{
 			} else {
 				fmt.Println("Changes successfully pushed to GitHub.")
 				fmt.Println("Please edit exp/conf.js to configure your experiment.")
+				// Rename project directory
+				err = os.Rename("../createExperiment", "../"+options.ExperimentName.Output)
+				if err != nil {
+					fmt.Printf("WARNING: Failed to rename experiment. Directory already exists with the name %s.\n", options.ExperimentName.Output)
+				} else {
+					fmt.Println("Experiment renamed successfully to " + options.ExperimentName.Output)
+				}
 				// Change working directory to the new project name
-				err := os.Chdir("../" + options.ExperimentName.Output)
+				err = os.Chdir("../" + options.ExperimentName.Output)
 				if err != nil {
 					// Handle the error, maybe the directory doesn't exist or there are permissions issues
 					fmt.Printf("WARNING: Failed to change working directory to the new project: %v.\n", err)
 				} else {
 					fmt.Println("Current working directory changed to the new project.")
+				}
+				err = os.Remove("./jspsych") // Modify as necessary
+				if err != nil {
+					// Handle the error, maybe the file didn't exist or there were permissions issues
+					fmt.Printf("WARNING: Failed to remove jsPsych binary: %v.\n", err)
+				} else {
+					fmt.Println("jsPsych binary removed successfully.")
 				}
 				success = true // Exit the loop since the push was successful
 			}
