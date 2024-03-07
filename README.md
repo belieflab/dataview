@@ -8,5 +8,9 @@ go mod tidy
 
 go build
 go install
-
 jspsych create
+
+or
+
+go run 
+

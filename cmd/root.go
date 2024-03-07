@@ -119,7 +119,7 @@ to quickly create a Cobra application.`,
 		}
 
 		gitModule := []string{
-			"git submodule add git@github.com:belieflab/jsPsychWrapper-v7.x.git wrap",
+			"git submodule add git@github.com:belieflab/jsPsychWrapper-v7.x.git ./wrap",
 		}
 
 		fileOperations := []string{

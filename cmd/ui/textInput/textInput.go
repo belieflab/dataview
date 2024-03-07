@@ -10,7 +10,7 @@ import (
 
 var (
 	// Styles
-	titleStyle = lipgloss.NewStyle().Background(lipgloss.Color("#077bff")).Foreground(lipgloss.Color("#030303")).Bold(true).Padding(0, 1, 0)
+	titleStyle = lipgloss.NewStyle().Background(lipgloss.Color("#00ADD8")).Foreground(lipgloss.Color("#030303")).Bold(true).Padding(0, 1, 0)
 )
 
 type (
@@ -59,13 +59,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.Type {
+		case tea.KeyCtrlC, tea.KeyEsc:
+			return m, tea.Quit
 		case tea.KeyEnter:
 			if len(m.textInput.Value()) > 1 {
 				m.output.update(m.textInput.Value())
 				return m, tea.Quit
 			}
-		case tea.KeyCtrlC, tea.KeyEsc:
-			return m, tea.Quit
+
 		}
 
 	// we handle errors just like any other message

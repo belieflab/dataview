@@ -9,8 +9,8 @@ import (
 
 var (
 	// Styles
-	focusedStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#077bff")).Background(lipgloss.Color("#030303")).Bold(true)
-	titleStyle   = lipgloss.NewStyle().Background(lipgloss.Color("#077bff")).Foreground(lipgloss.Color("#030303")).Bold(true)
+	focusedStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#00ADD8")).Background(lipgloss.Color("#030303")).Bold(true)
+	titleStyle   = lipgloss.NewStyle().Background(lipgloss.Color("#00ADD8")).Foreground(lipgloss.Color("#030303")).Bold(true)
 )
 
 type Selection struct {
