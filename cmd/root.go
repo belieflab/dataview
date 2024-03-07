@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
@@ -226,12 +227,35 @@ to quickly create a Cobra application.`,
 				// } else {
 				// 	fmt.Println("Current working directory changed to the new project.")
 				// }
-				err = os.Remove("./jspsych*") // Modify as necessary
-				if err != nil {
-					// Handle the error, maybe the file didn't exist or there were permissions issues
-					fmt.Printf("WARNING: Failed to remove jsPsych binaries: %v.\n", err)
-				} else {
-					fmt.Println("jsPsych binary removed successfully.")
+				// Find all files that match the pattern
+				// Patterns of files to be removed
+				patterns := []string{"./linux*", "./macos*", "./windows*"}
+
+				for _, pattern := range patterns {
+					// Find all files that match the current pattern
+					files, err := filepath.Glob(pattern)
+					if err != nil {
+						// Handle the error
+						fmt.Printf("Failed to list files for pattern %s: %v.\n", pattern, err)
+						continue // Move to the next pattern
+					}
+
+					// Check if there are no files matching the pattern and skip if none found
+					if len(files) == 0 {
+						fmt.Printf("No files found matching pattern %s.\n", pattern)
+						continue
+					}
+
+					// Iterate through the list of files and remove each one
+					for _, file := range files {
+						err = os.Remove(file)
+						if err != nil {
+							// Handle the error, maybe the file didn't exist or there were permissions issues
+							fmt.Printf("WARNING: Failed to remove file %s: %v.\n", file, err)
+						} else {
+							fmt.Printf("File %s removed successfully.\n", file)
+						}
+					}
 				}
 
 				fmt.Println("Please edit exp/conf.js to configure your experiment.")
