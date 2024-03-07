@@ -88,6 +88,6 @@ func (m model) View() string {
 		// No need for 'checked' since selection is immediate upon 'enter'
 		s += fmt.Sprintf("%s %s\n", cursor, choice)
 	}
-	s += "\nPress Enter to select your choice\n" // Updated instructions
+	s += "\nPress Enter to select your choice.\n" // Updated instructions
 	return s
 }

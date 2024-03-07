@@ -87,7 +87,7 @@ var createCmd = &cobra.Command{
 
 		// Set up and run multiInput program to choose jsPsych version
 		listOfOptions := listOptions{
-			options: []string{"jsPsych 6.3", "jsPsych 7.x"},
+			options: []string{"jsPsych 7.x", "jsPsych 6.3"},
 		}
 
 		options.jsPsychVersion = &multiInput.Selection{} // Ensure this is initialized
@@ -107,9 +107,14 @@ var createCmd = &cobra.Command{
 			"git init",
 		}
 
+		gitModule := []string{
+			"git submodule add git@github.com:belieflab/jsPsychWrapper-v7.x.git wrap",
+		}
+
 		fileOperations := []string{
 			// Create data folder and initialize .gitkeep
 			"mkdir -p ./data",
+			"touch ./data/.gitkeep",
 			// Style
 			"mkdir -p ./css",
 			"echo \"/* add local styling here */\" >> ./css/exp.css",
@@ -131,15 +136,11 @@ var createCmd = &cobra.Command{
 			"ln -s ./wrap/link/sync.sh ./sync.sh",
 		}
 
-		gitModule := []string{
-			"git submodule add git@github.com:belieflab/jsPsychWrapper-v7.x.git wrap",
-		}
-
 		gitAdd := []string{
 			"git add .gitignore",
 			"git add .gitmodules",
 			"git add data/.gitkeep",
-			"git add --all",
+			"git add *",
 		}
 
 		gitCommit := []string{
@@ -149,16 +150,19 @@ var createCmd = &cobra.Command{
 		}
 
 		// Execute all commands
-		for _, cmd := range gitModule {
-			if err := exec.Command("bash", "-c", cmd).Run(); err != nil {
-				fmt.Printf("WARNING: Failed to execute git command '%s': %v\n", cmd, err)
-			}
-		}
+
 		for _, cmd := range gitFork {
 			if err := exec.Command("bash", "-c", cmd).Run(); err != nil {
 				fmt.Printf("WARNING: Failed to execute git command '%s': %v\n", cmd, err)
 			}
 		}
+
+		for _, cmd := range gitModule {
+			if err := exec.Command("bash", "-c", cmd).Run(); err != nil {
+				fmt.Printf("WARNING: Failed to execute git command '%s': %v\n", cmd, err)
+			}
+		}
+
 		for _, cmd := range fileOperations {
 			if err := exec.Command("bash", "-c", cmd).Run(); err != nil {
 				fmt.Printf("WARNING: Failed to execute git command '%s': %v\n", cmd, err)
@@ -196,13 +200,12 @@ var createCmd = &cobra.Command{
 				time.Sleep(30 * time.Second) // Wait for 30 seconds before trying again
 			} else {
 				fmt.Println("Changes successfully pushed to GitHub.")
-				fmt.Println("Please edit exp/conf.js to configure your experiment.")
 				// Rename project directory
 				err = os.Rename("../createExperiment", "../"+options.ExperimentName.Output)
 				if err != nil {
 					fmt.Printf("WARNING: Failed to rename experiment. Directory already exists with the name %s.\n", options.ExperimentName.Output)
 				} else {
-					fmt.Println("Experiment renamed successfully to " + options.ExperimentName.Output)
+					fmt.Printf("Experiment renamed successfully to %s.", options.ExperimentName.Output)
 				}
 				// Change working directory to the new project name
 				err = os.Chdir("../" + options.ExperimentName.Output)
@@ -219,6 +222,15 @@ var createCmd = &cobra.Command{
 				} else {
 					fmt.Println("jsPsych binary removed successfully.")
 				}
+				err = os.Remove("./init.sh") // Modify as necessary
+				if err != nil {
+					// Handle the error, maybe the file didn't exist or there were permissions issues
+					fmt.Printf("WARNING: Failed to remove jsPsych binary: %v.\n", err)
+				} else {
+					fmt.Println("jsPsych binary removed successfully.")
+				}
+				fmt.Println("Please edit exp/conf.js to configure your experiment.")
+
 				success = true // Exit the loop since the push was successful
 			}
 		}
