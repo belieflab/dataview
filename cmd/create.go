@@ -107,10 +107,9 @@ var createCmd = &cobra.Command{
 			"git init",
 		}
 
-		fileCommands := []string{
+		fileOperations := []string{
 			// Create data folder and initialize .gitkeep
 			"mkdir -p ./data",
-			"touch ./data/.gitkeep",
 			// Style
 			"mkdir -p ./css",
 			"echo \"/* add local styling here */\" >> ./css/exp.css",
@@ -132,6 +131,10 @@ var createCmd = &cobra.Command{
 			"ln -s ./wrap/link/sync.sh ./sync.sh",
 		}
 
+		gitModule := []string{
+			"git submodule add git@github.com:belieflab/jsPsychWrapper-v7.x.git wrap",
+		}
+
 		gitAdd := []string{
 			"git add .gitignore",
 			"git add .gitmodules",
@@ -146,12 +149,17 @@ var createCmd = &cobra.Command{
 		}
 
 		// Execute all commands
+		for _, cmd := range gitModule {
+			if err := exec.Command("bash", "-c", cmd).Run(); err != nil {
+				fmt.Printf("WARNING: Failed to execute git command '%s': %v\n", cmd, err)
+			}
+		}
 		for _, cmd := range gitFork {
 			if err := exec.Command("bash", "-c", cmd).Run(); err != nil {
 				fmt.Printf("WARNING: Failed to execute git command '%s': %v\n", cmd, err)
 			}
 		}
-		for _, cmd := range fileCommands {
+		for _, cmd := range fileOperations {
 			if err := exec.Command("bash", "-c", cmd).Run(); err != nil {
 				fmt.Printf("WARNING: Failed to execute git command '%s': %v\n", cmd, err)
 			}
